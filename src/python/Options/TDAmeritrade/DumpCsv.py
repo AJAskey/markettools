@@ -51,8 +51,8 @@ def process(code, datype, min_vol, min_dte, theta_decay, price_chg_percent):
 
 
 if __name__ == '__main__':
-    mvol = int(10)
+    mvol = int(0)
 
-    process("SPY", "PUT", min_vol=mvol, min_dte=65, theta_decay=30, price_chg_percent=0.25)
-    process("SPY", "CALL", min_vol=mvol, min_dte=55, theta_decay=8, price_chg_percent=0.05)
+    process("SPY", "PUT", min_vol=mvol, min_dte=55, theta_decay=10, price_chg_percent=0.10)
+    process("SPY", "CALL", min_vol=mvol, min_dte=55, theta_decay=10, price_chg_percent=0.10)
 

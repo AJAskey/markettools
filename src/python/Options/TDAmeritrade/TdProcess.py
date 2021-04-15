@@ -1,24 +1,50 @@
 import math
 from datetime import date, datetime, timedelta
 
-from TDAmeritrade.OptionData import OptionData
 from TDAmeritrade import td_api_key
+from TDAmeritrade.OptionData import OptionData
 from TDAmeritrade.TDA_Interface import call_tda
 from Utilities import datetime_to_str
 
 
-def process(data):
+def process_putcall_data(data, opts, u):
+    """
+    Procedure process_putcall_data sums up option volume and open interest.
+    :param data: JSON data from TDAmeritrade representing either puts or calls of one symbol.
+    :param opts: Data structure of option 'Statistics' to be accumulated.
+    :param u: Price of the underlying stock for this symbol.
+    """
+    for expdate in data.keys():
+        for strike in data[expdate].keys():
+            for option in data[expdate][strike]:
+                jd = OptionData(option, u)
+                if jd.valid:
+                    if jd.oi > 0:
+                        if jd.mark > 0.0:
+                            if jd.type == "PUT":
+                                opts.totalPutsOi += jd.oi
+                                opts.totalPutsVol += jd.volume
+                                opts.dollarPutsOi += float(jd.oi) * float(jd.last)
+                                opts.dollarPutsVol += float(jd.volume) * float(jd.last)
+                            elif jd.type == "CALL":
+                                opts.totalCallsOi += jd.oi
+                                opts.totalCallsVol += jd.volume
+                                opts.dollarCallsOi += float(jd.oi) * float(jd.last)
+                                opts.dollarCallsVol += float(jd.volume) * float(jd.last)
+
+
+def process(data, u):
     retlist = []
     for expdate in data.keys():
         for strike in data[expdate].keys():
             for option in data[expdate][strike]:
-                jd = OptionData(option)
-                retlist.append(jd)
+                jd = OptionData(option, u)
+                if jd.valid:
+                    retlist.append(jd)
     return retlist
 
 
 def get_realvol(cod, td):
-
     tdscaler = 252.0 / float(td)
 
     today = datetime.now()
@@ -68,15 +94,15 @@ def get_avg_iv(jsondata, underlying, debug):
     for expdate in jsondata.keys():
         for strike in jsondata[expdate].keys():
             for option in jsondata[expdate][strike]:
-                daz = int(option['daysToExpiration'])
-                if 6 < daz < 31:
-                    if (underlying - 1.51) < float(strike) < (underlying + 1.51):
-                        iv = float(option['volatility'])
-                        if iv > 0.0:
-                            ivtot += iv
-                            knt += 1
-                            if debug:
-                                print(option['symbol'], iv, ivtot, knt, daz)
+                opt = OptionData(option, underlying)
+                if opt.valid:
+                    if 6 < opt.daysToExpiration < 183:
+                        if abs(opt.ul_pct) < 25.0:
+                            if opt.volatility > 0.0:
+                                ivtot += opt.volatility
+                                knt += 1
+                                if debug:
+                                    print(option['symbol'], opt.volatility, ivtot, knt, opt.daysToExpiration)
     aiv = float(0.0)
     if knt > 0:
         aiv = ivtot / float(knt)
@@ -93,6 +119,11 @@ def buildstr(data):
         "\n")
     ret = tmp.replace("nan,", "0.0,")
     return ret
+
+
+def get_ul_pct(opt, u):
+    ulp = (float(opt.strike) / float(u) * 100.0) - 100.0
+    return ulp
 
 
 def header(file, cod, underlying):
@@ -127,8 +158,8 @@ if __name__ == '__main__':
             avgpiv = get_avg_iv(content['putExpDateMap'], ul, False)
             rvol = get_realvol(code, 22)
 
-            calls = process(content['callExpDateMap'])
-            puts = process(content['putExpDateMap'])
+            calls = process(content['callExpDateMap'], ul)
+            puts = process(content['putExpDateMap'], ul)
 
             strToday = date.today().strftime("%Y%m%d")
             filename = "out/{c}-{d}.csv".format(c=code, d=strToday)

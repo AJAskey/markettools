@@ -4,7 +4,7 @@ from TDAmeritrade import td_api_key
 from TDAmeritrade.OptionData import OptionData
 from TDAmeritrade.Statistics import Statistics
 from TDAmeritrade.TDA_Interface import call_tda
-from TDAmeritrade.TdProcess import get_avg_iv, get_realvol
+from TDAmeritrade.TdProcess import get_avg_iv, get_realvol, process_putcall_data
 
 totalPuts = 0
 totalCalls = 0
@@ -12,11 +12,18 @@ valuePuts = 0.0
 valueCalls = 0.0
 
 
-def process(data, opts):
+def process1(data, opts, u):
+    """
+    Procedure process sums up option volume and open interest.
+
+    :param data: JSON data from TDAmeritrade representing either puts or calls of one symbol.
+    :param opts: Data structure of option statistics to be accumulated.
+    :param u: Price of the underlying stock for this symbol.
+    """
     for expdate in data.keys():
         for strike in data[expdate].keys():
             for option in data[expdate][strike]:
-                jd = OptionData(option)
+                jd = OptionData(option, u)
                 if jd.valid:
                     if jd.oi > 0:
                         if jd.mark > 0.0:
@@ -86,12 +93,12 @@ if __name__ == '__main__':
             if content['status'] == "SUCCESS":
                 print("Processing : ", code)
 
-                ul = content['underlyingPrice']
+                ul = float(content['underlyingPrice'])
 
                 stats = Statistics(code)
 
-                process(content['callExpDateMap'], stats)
-                process(content['putExpDateMap'], stats)
+                process_putcall_data(content['callExpDateMap'], stats, ul)
+                process_putcall_data(content['putExpDateMap'], stats, ul)
 
                 stats.calliv = get_avg_iv(content['callExpDateMap'], ul, False)
                 stats.putiv = get_avg_iv(content['putExpDateMap'], ul, False)

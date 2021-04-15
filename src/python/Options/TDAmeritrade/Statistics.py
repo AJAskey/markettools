@@ -29,21 +29,25 @@ class Statistics:
     def __str__(self):
         width = 15
 
-        s_totalPutsVol = "{:,d}".format(self.totalPutsVol)
-        s_totalCallsVol = "{:,d}".format(self.totalCallsVol)
+        tot_vol = self.totalPutsVol + self.totalCallsVol
 
-        ret = " {}:\n\tVolume Put   : {}\t\tCall : {}\t : {:.2f}\n".format(
-            self.code, s_totalPutsVol.rjust(width), s_totalCallsVol.rjust(width), self.putcall)
+        ret = " {}:\n".format(self.code)
+        if tot_vol > 0:
+            s_totalPutsVol = "{:,d}".format(self.totalPutsVol)
+            s_totalCallsVol = "{:,d}".format(self.totalCallsVol)
 
-        s_dollarPutsVol = "${:,d}".format(int(self.dollarPutsVol*100.0))
-        s_dollarCallsVol = "${:,d}".format(int(self.dollarCallsVol*100.0))
-        ret += "\tVolume Put $ : {}\t\tCall : {}\t : {:.2f}\n".format(
-            s_dollarPutsVol.rjust(width), s_dollarCallsVol.rjust(width), self.dollarputcall)
+            ret = "\tVolume Put   : {}\t\tCall : {}\t : {:.2f}\n".format(
+                s_totalPutsVol.rjust(width), s_totalCallsVol.rjust(width), self.putcall)
+
+            s_dollarPutsVol = "${:,d}".format(int(self.dollarPutsVol * 100.0))
+            s_dollarCallsVol = "${:,d}".format(int(self.dollarCallsVol * 100.0))
+            ret += "\tVolume Put $ : {}\t\tCall : {}\t : {:.2f}\n".format(
+                s_dollarPutsVol.rjust(width), s_dollarCallsVol.rjust(width), self.dollarputcall)
 
         s_totalPutsOi = "{:,d}".format(self.totalPutsOi)
         s_totalCallsOi = "{:,d}".format(self.totalCallsOi)
-        s_dollarPutsOi = "${:,d}".format(int(self.dollarPutsOi*100.0))
-        s_dollarCallsOi = "${:,d}".format(int(self.dollarCallsOi*100.0))
+        s_dollarPutsOi = "${:,d}".format(int(self.dollarPutsOi * 100.0))
+        s_dollarCallsOi = "${:,d}".format(int(self.dollarCallsOi * 100.0))
 
         ret += "\tOI Put       : {}\t\tCall : {}\t : {:.2f}\n".format(
             s_totalPutsOi.rjust(width), s_totalCallsOi.rjust(width), self.putcallio)

@@ -5,7 +5,7 @@ from Utilities import datetime_to_str, ms_to_datetime
 
 class OptionData:
 
-    def __init__(self, jsondata):
+    def __init__(self, jsondata, ul):
         self.valid = False
 
         self.name = jsondata['symbol']
@@ -50,6 +50,13 @@ class OptionData:
                     self.premium = 0.0
                     if self.mark > 0.0:
                         self.premium = (abs(self.delta) + self.theta) / self.mark
+
+                    if ul > 0.0:
+                        self.ul = ul
+                        self.ul_pct = (float(self.strike) / float(ul) * 100.0) - 100.0
+                    else:
+                        self.ul = 0.0
+                        self.ul_pct = 0.0
 
                     self.valid = True
 

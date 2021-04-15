@@ -1,17 +1,61 @@
-"""
-This is a doc string.
-"""
-
 from TDAmeritrade.OptionData import OptionData
 from TDAmeritrade import td_api_key
 from TDAmeritrade.Statistics import Statistics
 from TDAmeritrade.TDA_Interface import call_tda
-from TDAmeritrade.TdProcess import get_avg_iv, get_realvol, process_putcall_data
+from TDAmeritrade.TdProcess import get_avg_iv, get_realvol
 
 totalPuts = 0
 totalCalls = 0
 valuePuts = 0.0
 valueCalls = 0.0
+
+
+def valid_strike(stk, low, high):
+    ret = False
+    if stk < low:
+        ret = True
+    elif stk > high:
+        ret = True
+    return ret
+
+
+def valid_put_strike(stk, low):
+    ret = False
+    if stk < low:
+        ret = True
+    return ret
+
+
+def valid_call_strike(stk, high):
+    ret = False
+    if stk > high:
+        ret = True
+    return ret
+
+
+def process(data, opts, ulp):
+    stklow = ulp * 0.90
+    stkhigh = ulp * 1.10
+    for expdate in data.keys():
+        for strike in data[expdate].keys():
+            for option in data[expdate][strike]:
+                jd = OptionData(option)
+                if jd.valid:
+                    if jd.oi > 0:
+                        if jd.mark > 0.0:
+                            if jd.daysToExpiration > 0:
+                                if jd.type == "PUT":
+                                    if valid_put_strike(jd.strike, stklow):
+                                        opts.totalPutsOi += jd.oi
+                                        opts.totalPutsVol += jd.volume
+                                        opts.dollarPutsOi += float(jd.oi) * float(jd.last)
+                                        opts.dollarPutsVol += float(jd.volume) * float(jd.last)
+                                elif jd.type == "CALL":
+                                    if valid_call_strike(jd.strike, stkhigh):
+                                        opts.totalCallsOi += jd.oi
+                                        opts.totalCallsVol += jd.volume
+                                        opts.dollarCallsOi += float(jd.oi) * float(jd.last)
+                                        opts.dollarCallsVol += float(jd.volume) * float(jd.last)
 
 
 def is_success(cnt):
@@ -34,13 +78,12 @@ def process_code(cod):
 
         sts = Statistics(cod)
 
-        process_putcall_data(content['callExpDateMap'], sts, ul)
-        process_putcall_data(content['putExpDateMap'], sts, ul)
+        process(content['callExpDateMap'], sts, ul)
+        process(content['putExpDateMap'], sts, ul)
 
         sts.calliv = get_avg_iv(content['callExpDateMap'], ul, False)
         sts.putiv = get_avg_iv(content['putExpDateMap'], ul, False)
         sts.realvol = get_realvol(cod, 22)
-
         if sts.realvol > 0.0:
             sts.putpremium = ((sts.putiv / sts.realvol) - 1.0) * 100.0
             sts.callpremium = ((sts.calliv / sts.realvol) - 1.0) * 100.0

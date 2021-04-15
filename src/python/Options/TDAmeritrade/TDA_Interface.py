@@ -31,7 +31,7 @@ def get_tda_list(url, params, min_dte, max_dte, min_oi, min_vol, min_price, max_
         for expdate in data.keys():
             for strike in data[expdate].keys():
                 for option in data[expdate][strike]:
-                    jd = OptionData(option)
+                    jd = OptionData(option, ul)
                     if jd.valid:
                         if jd.oi >= min_oi:
                             if jd.volume >= min_vol:
