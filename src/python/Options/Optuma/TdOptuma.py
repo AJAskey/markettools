@@ -5,57 +5,16 @@ from TDAmeritrade.OptionData import OptionData
 from TDAmeritrade.Statistics import Statistics
 from TDAmeritrade.TDA_Interface import call_tda
 from TDAmeritrade.TdProcess import get_avg_iv, get_realvol, process_putcall_data
+from Utilities import build_list
 
 totalPuts = 0
 totalCalls = 0
 valuePuts = 0.0
 valueCalls = 0.0
 
-
-def process1(data, opts, u):
-    """
-    Procedure process sums up option volume and open interest.
-
-    :param data: JSON data from TDAmeritrade representing either puts or calls of one symbol.
-    :param opts: Data structure of option statistics to be accumulated.
-    :param u: Price of the underlying stock for this symbol.
-    """
-    for expdate in data.keys():
-        for strike in data[expdate].keys():
-            for option in data[expdate][strike]:
-                jd = OptionData(option, u)
-                if jd.valid:
-                    if jd.oi > 0:
-                        if jd.mark > 0.0:
-                            if jd.type == "PUT":
-                                opts.totalPutsOi += jd.oi
-                                opts.totalPutsVol += jd.volume
-                                opts.dollarPutsOi += float(jd.oi) * float(jd.last)
-                                opts.dollarPutsVol += float(jd.volume) * float(jd.last)
-                            elif jd.type == "CALL":
-                                opts.totalCallsOi += jd.oi
-                                opts.totalCallsVol += jd.volume
-                                opts.dollarCallsOi += float(jd.oi) * float(jd.last)
-                                opts.dollarCallsVol += float(jd.volume) * float(jd.last)
-
-
-def build_list(fname):
-    ret = []
-    f = open(file=fname, encoding='utf-8')
-    for line in f:
-        c = line.split(',')
-        cc = c[0].strip()
-        if cc != "Code":
-            ret.append(cc)
-    f.close()
-    return ret
-
-
 if __name__ == '__main__':
 
-    codes1 = ['BOTZ', 'DIA', 'GLD', 'HYG', 'IAI', 'IBB', 'IEZ', 'IGV', 'ITA', 'IWM', 'IYT', 'JKG', 'JKJ',
-              'KIE', 'KRE', 'PICK', 'PPH', 'QQQ', 'RING', 'SLV', 'SMH', 'SPY', 'TLT', 'USRT', 'WOOD', 'XHB', 'XLB',
-              'XLC', 'XLE', 'XLF', 'XLI', 'XLK', 'XLP', 'XLRE', 'XLU', 'XLV', 'XLY', 'XRT']
+    codes1 = build_list("D:/dev/MarketTools - dev/lists/BreadthETFs.csv")
     codes1.sort()
 
     codes2 = ['AAPL', 'AMZN', 'BBY', 'BDX', 'BLL', 'CAT', 'CMCSA', 'COP', 'CRM', 'CSCO', 'DD', 'DHI', 'FIS',
@@ -80,7 +39,7 @@ if __name__ == '__main__':
     statlist = []
 
     knt = 0
-    for code in all_codes:
+    for code in codes1:
 
         knt += 1
         if knt > 10:

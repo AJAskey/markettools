@@ -1,7 +1,6 @@
 import json
 from datetime import date, datetime
 
-
 from TDAmeritrade import td_api_key, TdProcess
 from TDAmeritrade.TDA_Interface import call_tda
 
@@ -9,11 +8,25 @@ codes = ['SPY']
 
 
 def opt_to_str(opt):
+    # double currentPriceOfUnderlying;
+    # DateTime expiry;
+    # double strikePrice;
+    # long daysToExpiry;
+    # double volatility;
+    # double delta;
+    # double gamma;
+    # double rho;
+    # double vega;
+    # double theta;
+
     s = opt.description.split()
     date_time_str = "{}-{}-{}".format(s[1], s[2], s[3])
     date_time_obj = datetime.strptime(date_time_str, '%b-%d-%Y')
-    ss = "{}, {}, {}, {}".format(s[0], date_time_obj.strftime("%d %b %Y"), s[4], s[5])
-    ret = "{}, {:.2f}, {:d}, {:.2f}\n".format(ss, opt.volatility, opt.daysToExpiration, opt.ul_pct)
+    ss = "{}, {:.2f}, {}, {}, {}, ".format(s[0], opt.ul, s[5], date_time_obj.strftime("%d %b %Y"), s[4])
+    ss1 = "{:d}, {:.2f}, ".format(opt.daysToExpiration, opt.volatility)
+    ss2 = "{}, {}, {}, {}, {}, ".format(opt.delta, opt.gamma, opt.rho, opt.vega, opt.theta)
+    ss3 = "{}, {}\n".format(opt.volume, opt.oi)
+    ret = ss + ss1 + ss2 + ss3
     return ret
 
 

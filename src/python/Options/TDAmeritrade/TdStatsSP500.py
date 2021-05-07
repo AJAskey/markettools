@@ -2,12 +2,13 @@
 This is a doc string.
 """
 from datetime import datetime
+import time
 
-from TDAmeritrade.OptionData import OptionData
 from TDAmeritrade import td_api_key
 from TDAmeritrade.Statistics import Statistics
 from TDAmeritrade.TDA_Interface import call_tda
 from TDAmeritrade.TdProcess import get_avg_iv, get_realvol, process_putcall_data
+from Utilities import build_list
 
 totalPuts = 0
 totalCalls = 0
@@ -24,7 +25,10 @@ def is_success(cnt):
         return ret
 
 
-def process_code(cod):
+redo_list = []
+
+
+def process_code(cod, redo):
     p = dict(apikey=td_api_key, symbol=cod)
     content = call_tda(url, p)
 
@@ -63,31 +67,37 @@ def process_code(cod):
 
     else:
         print("Bad code : ", cod)
+        if redo:
+            redo_list.append(cod)
+            time.sleep(15.0)
 
 
 if __name__ == '__main__':
 
-    main_codes = ['XLB', 'XLC', 'XLE', 'XLF', 'XLI', 'XLK', 'XLP', 'XLU', 'XLV', 'XLY', 'XLRE', 'XHB', 'XRT', 'SMH',
-                  'IBB', 'QQQJ', 'IWM', 'DIA', 'QQQ', 'SPY']
+    now = datetime.now()
+    date_time = now.strftime("%m/%d/%Y, %H:%M:%S\n\n")
 
-    misc_codes = ['TLT', 'SLV', 'GLD']
-
-    test_codes = ['SPY']
+    main_codes = build_list("D:/dev/MarketTools - dev/lists/spx_components.csv")
+    main_codes.sort()
 
     url = r"https://api.tdameritrade.com/v1/marketdata/chains"
 
     statlist = []
-    totstats = Statistics("Combined")
+    totstats = Statistics("Combined SPX Individual Components")
 
     for code in main_codes:
-        process_code(code)
+        process_code(code, True)
+
+    time.sleep(10.0)
+
+    print("Redo List")
+    for code in redo_list:
+        process_code(code, False)
 
     totstats.calc()
     print(totstats)
 
-    now = datetime.now()
-    date_time = now.strftime("%m/%d/%Y, %H:%M:%S\n\n")
-    with open("out/tdstats.txt", 'w') as fp:
+    with open("out/tdSP500stats.txt", 'w') as fp:
         for stats in statlist:
             fp.write("{}"
                      ""

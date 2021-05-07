@@ -18,6 +18,18 @@ def datetime_to_str(dt):
     return dt.strftime("%Y-%b-%d")
 
 
+def build_list(fname):
+    ret = []
+    f = open(file=fname, encoding='utf-8')
+    for line in f:
+        c = line.split(',')
+        cc = c[0].strip()
+        if "Code" not in cc:
+            ret.append(cc)
+    f.close()
+    return ret
+
+
 def read_json(filename):
     with open(filename) as f:
         data = json.load(f)

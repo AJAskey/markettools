@@ -97,7 +97,7 @@ def get_avg_iv(jsondata, underlying, debug):
                 opt = OptionData(option, underlying)
                 if opt.valid:
                     if 6 < opt.daysToExpiration < 183:
-                        if abs(opt.ul_pct) < 25.0:
+                        if abs(opt.ul_pct) < 50.0:
                             if opt.volatility > 0.0:
                                 ivtot += opt.volatility
                                 knt += 1

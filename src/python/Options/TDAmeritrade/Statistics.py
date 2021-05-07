@@ -27,7 +27,7 @@ class Statistics:
         self.premium = 0.0
 
     def __str__(self):
-        width = 15
+        width = 16
 
         tot_vol = self.totalPutsVol + self.totalCallsVol
 
@@ -36,7 +36,7 @@ class Statistics:
             s_totalPutsVol = "{:,d}".format(self.totalPutsVol)
             s_totalCallsVol = "{:,d}".format(self.totalCallsVol)
 
-            ret = "\tVolume Put   : {}\t\tCall : {}\t : {:.2f}\n".format(
+            ret += "\tVolume Put   : {}\t\tCall : {}\t : {:.2f}\n".format(
                 s_totalPutsVol.rjust(width), s_totalCallsVol.rjust(width), self.putcall)
 
             s_dollarPutsVol = "${:,d}".format(int(self.dollarPutsVol * 100.0))
@@ -58,11 +58,15 @@ class Statistics:
             s_putiv = "{:.2f}".format(self.putiv)
             s_calliv = "{:.2f}".format(self.calliv)
             s_realvol = "{:.2f}".format(self.realvol)
-            s_premium = "{:7.2f}".format(self.premium)
-            s_putpremium = "{:.2f}".format(self.putpremium)
-            s_callpremium = "{:.2f}".format(self.callpremium)
-            tmp = "\tAvg IV Put   : {}\t\tCall : {}\t   RealVol :{}\tPremium :{}".format(
-                s_putiv.rjust(width), s_calliv.rjust(width), s_realvol.rjust(6), s_premium.rjust(6))
+            # s_premium = "{:7.2f}".format(self.premium)
+            # s_putpremium = "{:.2f}".format(self.putpremium)
+            # s_callpremium = "{:.2f}".format(self.callpremium)
+            skew = 0.0
+            if self.calliv > 0.0:
+                skew = self.putiv / self.calliv * 100.0
+            tmp = "\tAvg IV Put   : {}\t\tCall : {}\t   RealizedVol :{}\tPremium : {}%   Skew : {}".format(
+                s_putiv.rjust(width), s_calliv.rjust(width), s_realvol.rjust(6), round(self.premium),
+                round(skew))
             ret += tmp
 
         return ret
